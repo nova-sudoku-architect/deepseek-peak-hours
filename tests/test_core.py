@@ -12,15 +12,20 @@ from deepseek_peak_hours import cli
 from deepseek_peak_hours.core import (
     BUNDLED_CONFIG,
     build_config,
+    config_age_days,
     evaluate,
     humanize_delta,
     load_config,
     next_boundary,
     parse_footnote,
     parse_holidays_txt,
+    peak_ranges,
+    schedule,
+    schedule_day,
     staleness_warnings,
     weekdays_label,
     window_minutes,
+    writable_config_path,
 )
 
 FOOTNOTE_HTML = """
@@ -316,3 +321,189 @@ def test_cli_init_writes_user_config(tmp_path: Path, capsys):
     assert json.loads(dest.read_text())["peak"]["windows_utc"]
     # second run without --force refuses
     assert cli.main(["init", "--config", str(dest)]) == cli.EXIT_ERROR
+
+
+# --------------------------------------------------------------------------- #
+# fetched config is persisted and then used by the CLI
+# --------------------------------------------------------------------------- #
+def test_update_writes_config_that_check_then_reads(tmp_path: Path, capsys,
+                                                    monkeypatch):
+    """The whole point: fetch → write config → CLI reads that config."""
+    cfg_file = tmp_path / "state" / "config.json"
+    html = tmp_path / "pricing.html"
+    # A rule that is *different* from the bundled one, so we can prove the
+    # checker really used the fetched file.
+    html.write_text(
+        "<p>Peak hours are 13:00 - 14:00 UTC, Monday through Friday, "
+        "excluding Chinese public holidays.</p>")
+
+    monkeypatch.setenv("DSPEAK_CONFIG", str(cfg_file))
+    # first write creates the config → exit 0 (matching the service contract)
+    assert cli.main(["update", "--html", str(html)]) == 0
+    capsys.readouterr()
+
+    saved = json.loads(cfg_file.read_text())
+    assert saved["peak"]["windows_utc"] == ["13:00-14:00"]
+
+    # 02:00 UTC is peak under the bundled rule, off-peak under the fetched one
+    assert cli.main(["--at", "2026-10-19T02:00:00+00:00", "--quiet"]) == 1
+    assert capsys.readouterr().out.strip() == "off-peak"
+    # 13:30 UTC is now peak
+    assert cli.main(["--at", "2026-10-19T13:30:00+00:00", "--quiet"]) == 0
+    assert capsys.readouterr().out.strip() == "peak"
+
+
+def test_update_honours_dspeak_config_env(tmp_path: Path, monkeypatch, capsys):
+    cfg_file = tmp_path / "env-config.json"
+    monkeypatch.setenv("DSPEAK_CONFIG", str(cfg_file))
+    html = tmp_path / "p.html"
+    html.write_text(FOOTNOTE_HTML)
+    assert cli.main(["update", "--html", str(html)]) == 0
+    assert cfg_file.exists()
+    assert json.loads(cfg_file.read_text())["peak"]["windows_utc"] == \
+        ["01:00-04:00", "06:00-10:00"]
+
+
+def test_update_defaults_to_user_config_not_package(tmp_path: Path):
+    # With no --config and no env, update must target the user config, never
+    # the read-only copy inside the installed package.
+    assert writable_config_path(None).name == "config.json"
+    assert "site-packages" not in str(writable_config_path(None))
+
+
+def test_show_reports_config_age(capsys):
+    assert cli.main(["show"]) == 0
+    out = capsys.readouterr().out
+    assert "updated_at" in out
+    assert "age" in out
+
+
+def test_config_age_days():
+    cfg = {"updated_at": "2026-10-07T00:00:00Z"}
+    age = config_age_days(cfg, datetime(2026, 10, 17, tzinfo=timezone.utc))
+    assert age == pytest.approx(10.0)
+    assert config_age_days({}) is None
+    assert config_age_days({"updated_at": "nonsense"}) is None
+
+
+# --------------------------------------------------------------------------- #
+# schedule
+# --------------------------------------------------------------------------- #
+def test_peak_ranges_weekday(cfg):
+    from datetime import date
+    day = schedule_day(cfg, date(2026, 10, 19))
+    assert day["has_peak"] is True
+    assert len(day["ranges"]) == 2
+    assert day["peak_seconds"] == 7 * 3600
+
+
+def test_schedule_day_holiday_has_no_peak(cfg):
+    from datetime import date
+    day = schedule_day(cfg, date(2026, 10, 1))       # National Day
+    assert day["is_cn_holiday"] is True
+    assert day["has_peak"] is False
+    assert day["ranges"] == []
+
+
+def test_schedule_covers_requested_days(cfg):
+    from datetime import date
+    days = schedule(cfg, date(2026, 10, 17), 7)
+    assert len(days) == 7
+    assert days[0]["date"] == "2026-10-17"
+    assert days[0]["has_peak"] is False            # Saturday
+    assert days[2]["date"] == "2026-10-19"         # Monday
+    assert days[2]["has_peak"] is True
+
+
+def test_peak_ranges_respects_utc_tz(cfg):
+    from datetime import date
+    from zoneinfo import ZoneInfo
+    day = schedule_day(cfg, date(2026, 10, 19), ZoneInfo("UTC"))
+    assert [r["start_local"] for r in day["ranges"]] == ["01:00", "06:00"]
+
+
+def test_cli_schedule(capsys):
+    assert cli.main(["schedule", "--from", "2026-10-17", "--days", "3"]) == 0
+    out = capsys.readouterr().out
+    assert "Sat 2026-10-17" in out
+    assert "Mon 2026-10-19" in out
+    assert "off-peak all day" in out
+    assert "total peak time" in out
+
+
+def test_cli_schedule_json(capsys):
+    assert cli.main(["schedule", "--from", "2026-10-19", "--days", "1",
+                     "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["days"][0]["date"] == "2026-10-19"
+    assert len(payload["days"][0]["ranges"]) == 2
+
+
+# --------------------------------------------------------------------------- #
+# systemd units
+# --------------------------------------------------------------------------- #
+def test_render_service_pins_config():
+    from deepseek_peak_hours import units
+    text = units.render_service("/usr/bin/python3",
+                                Path("/home/u/.config/c.json"), None)
+    assert "ExecStart=/usr/bin/python3 -m deepseek_peak_hours update" in text
+    assert "--config /home/u/.config/c.json" in text
+    assert 'Environment="DSPEAK_CONFIG=/home/u/.config/c.json"' in text
+    assert "SuccessExitStatus=0 10" in text
+    assert "Type=oneshot" in text
+
+
+def test_render_timer_weekly():
+    from deepseek_peak_hours import units
+    text = units.render_timer("Mon", "09:00", 300)
+    assert "OnCalendar=Mon 09:00" in text
+    assert "Persistent=true" in text
+    assert "RandomizedDelaySec=300" in text
+    assert "Unit=deepseek-peak-hours-update.service" in text
+
+
+@pytest.mark.parametrize("value,expected", [
+    ("mon", "Mon"), ("Monday", "Mon"), ("tuesday", "Tue"), ("SUN", "Sun"),
+])
+def test_normalise_day(value, expected):
+    from deepseek_peak_hours import units
+    assert units.normalise_day(value) == expected
+
+
+def test_normalise_day_rejects_garbage():
+    from deepseek_peak_hours import units
+    with pytest.raises(units.UnitError):
+        units.normalise_day("blursday")
+
+
+@pytest.mark.parametrize("value,expected", [
+    ("09:00", "09:00"), ("9:00", "09:00"), ("0900", "09:00"), ("9", "09:00"),
+])
+def test_normalise_time(value, expected):
+    from deepseek_peak_hours import units
+    assert units.normalise_time(value) == expected
+
+
+def test_normalise_time_rejects_garbage():
+    from deepseek_peak_hours import units
+    with pytest.raises(units.UnitError):
+        units.normalise_time("25:99")
+
+
+def test_install_writes_units_without_enabling(tmp_path: Path, capsys):
+    from deepseek_peak_hours import units
+    paths = units.UnitPaths(tmp_path / "svc.service", tmp_path / "t.timer")
+    code = cli.main(["service", "install", "--no-enable",
+                     "--service-file", str(paths.service),
+                     "--timer-file", str(paths.timer),
+                     "--config", str(tmp_path / "cfg.json")])
+    assert code == 0
+    assert paths.service.exists() and paths.timer.exists()
+    assert "Mon 09:00" in paths.timer.read_text()
+    assert str(tmp_path / "cfg.json") in paths.service.read_text()
+
+
+def test_service_show(capsys):
+    assert cli.main(["service", "show", "--day", "Sun", "--at", "03:30"]) == 0
+    out = capsys.readouterr().out
+    assert "OnCalendar=Sun 03:30" in out

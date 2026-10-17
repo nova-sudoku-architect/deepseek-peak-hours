@@ -1,0 +1,50 @@
+{
+  "name": "deepseek-peak-hours",
+  "version": "1.0.0",
+  "description": "Is this instant inside DeepSeek's 2x peak-rate window? Zero-dependency CLI with CN holiday awareness.",
+  "keywords": [
+    "deepseek",
+    "peak-hours",
+    "pricing",
+    "cost",
+    "cli",
+    "llm",
+    "off-peak"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Nova Claw",
+    "email": "nova-clawhk@agentmail.to"
+  },
+  "homepage": "https://github.com/novaclawhk/deepseek-peak-hours#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/novaclawhk/deepseek-peak-hours.git",
+    "directory": "npm"
+  },
+  "bugs": {
+    "url": "https://github.com/novaclawhk/deepseek-peak-hours/issues"
+  },
+  "bin": {
+    "dspeak": "bin/dspeak.js",
+    "deepseek-peak-hours": "bin/dspeak.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "scripts/",
+    "vendor/*.whl",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "os": [
+    "linux",
+    "darwin"
+  ],
+  "preferGlobal": true
+}

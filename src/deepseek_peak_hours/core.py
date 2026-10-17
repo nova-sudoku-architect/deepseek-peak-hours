@@ -61,6 +61,34 @@ def resolve_config_path(explicit: str | os.PathLike | None = None) -> Path:
     return BUNDLED_CONFIG
 
 
+def writable_config_path(explicit: str | os.PathLike | None = None) -> Path:
+    """Where ``update`` should *write*.
+
+    Same precedence as :func:`resolve_config_path`, but never the bundled copy —
+    that lives inside the installed package and must stay pristine.
+    """
+    if explicit:
+        return Path(explicit).expanduser()
+    env = os.environ.get(ENV_CONFIG)
+    if env:
+        return Path(env).expanduser()
+    return user_config_path()
+
+
+def config_age_days(cfg: dict, now: datetime | None = None) -> float | None:
+    """Age of ``updated_at`` in days, or ``None`` when unset/unparseable."""
+    stamp = cfg.get("updated_at")
+    if not stamp:
+        return None
+    try:
+        then = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ").replace(
+            tzinfo=timezone.utc)
+    except ValueError:
+        return None
+    now = now or datetime.now(timezone.utc)
+    return (now - then).total_seconds() / 86400
+
+
 def load_config(path: Path) -> dict:
     """Load and minimally validate the JSON config file."""
     try:
@@ -215,6 +243,83 @@ def humanize_delta(seconds: int) -> str:
     if minutes or not parts:
         parts.append(f"{minutes}m")
     return " ".join(parts)
+
+
+# --------------------------------------------------------------------------- #
+# schedule scanning
+# --------------------------------------------------------------------------- #
+def peak_ranges(cfg: dict, start: datetime, end: datetime,
+                tz: ZoneInfo | None = None) -> list[dict]:
+    """Contiguous peak intervals inside ``[start, end)`` at minute resolution.
+
+    The scan walks wall-clock minutes rather than deriving ranges from the
+    config, so midnight-crossing windows, DST shifts and CN holidays all fall
+    out correctly without special cases.
+    """
+    tz = tz or ZoneInfo(cfg["display_timezone"])
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=tz)
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=tz)
+
+    out: list[dict] = []
+    cur_start: datetime | None = None
+    probe = start.replace(second=0, microsecond=0)
+    step = timedelta(minutes=1)
+
+    while probe < end:
+        if evaluate(cfg, probe)["is_peak"]:
+            if cur_start is None:
+                cur_start = probe
+        elif cur_start is not None:
+            out.append(_range_dict(cfg, cur_start, probe, tz))
+            cur_start = None
+        probe += step
+
+    if cur_start is not None:
+        out.append(_range_dict(cfg, cur_start, end, tz))
+    return out
+
+
+def _range_dict(cfg: dict, start: datetime, end: datetime, tz: ZoneInfo) -> dict:
+    seconds = int((end - start).total_seconds())
+    return {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "start_local": start.astimezone(tz).strftime("%H:%M"),
+        "end_local": end.astimezone(tz).strftime("%H:%M"),
+        "local_date": start.astimezone(tz).date().isoformat(),
+        "duration_seconds": seconds,
+        "duration": humanize_delta(seconds),
+    }
+
+
+def schedule_day(cfg: dict, day: date, tz: ZoneInfo | None = None) -> dict:
+    """Peak ranges for one local calendar day."""
+    tz = tz or ZoneInfo(cfg["display_timezone"])
+    start = datetime.combine(day, time(0, 0), tzinfo=tz)
+    end = start + timedelta(days=1)
+    ranges = peak_ranges(cfg, start, end, tz)
+    total = sum(r["duration_seconds"] for r in ranges)
+    return {
+        "date": day.isoformat(),
+        "weekday": DAY_LABEL[day.isoweekday()],
+        "is_cn_holiday": day.isoformat() in {
+            h["date"] for h in cfg["cn_holidays"]},
+        "ranges": ranges,
+        "peak_seconds": total,
+        "peak_duration": humanize_delta(total) if total else "—",
+        "has_peak": bool(ranges),
+    }
+
+
+def schedule(cfg: dict, start_day: date | None = None, days: int = 7,
+             tz: ZoneInfo | None = None) -> list[dict]:
+    """``days`` consecutive local days of peak ranges."""
+    tz = tz or ZoneInfo(cfg["display_timezone"])
+    start_day = start_day or datetime.now(tz).date()
+    return [schedule_day(cfg, start_day + timedelta(days=i), tz)
+            for i in range(days)]
 
 
 # --------------------------------------------------------------------------- #
