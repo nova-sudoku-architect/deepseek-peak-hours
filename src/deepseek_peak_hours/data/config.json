@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-16T21:34:18Z",
+  "display_timezone": "Asia/Hong_Kong",
+  "cn_timezone": "Asia/Shanghai",
+  "peak": {
+    "windows_utc": [
+      "01:00-04:00",
+      "06:00-10:00"
+    ],
+    "weekdays": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "exclude_cn_holidays": true
+  },
+  "cn_holidays": [
+    {
+      "date": "2026-01-01",
+      "name": "New Year's Day"
+    },
+    {
+      "date": "2026-01-02",
+      "name": "New Year's Day (adjusted rest)"
+    },
+    {
+      "date": "2026-01-03",
+      "name": "New Year's Day (weekend)"
+    },
+    {
+      "date": "2026-02-15",
+      "name": "Spring Festival (weekend)"
+    },
+    {
+      "date": "2026-02-16",
+      "name": "Spring Festival"
+    },
+    {
+      "date": "2026-02-17",
+      "name": "Spring Festival"
+    },
+    {
+      "date": "2026-02-18",
+      "name": "Spring Festival"
+    },
+    {
+      "date": "2026-02-19",
+      "name": "Spring Festival"
+    },
+    {
+      "date": "2026-02-20",
+      "name": "Spring Festival (adjusted rest)"
+    },
+    {
+      "date": "2026-02-21",
+      "name": "Spring Festival (weekend)"
+    },
+    {
+      "date": "2026-02-22",
+      "name": "Spring Festival (weekend)"
+    },
+    {
+      "date": "2026-02-23",
+      "name": "Spring Festival (adjusted rest)"
+    },
+    {
+      "date": "2026-04-04",
+      "name": "Tomb Sweeping / Qingming (weekend)"
+    },
+    {
+      "date": "2026-04-05",
+      "name": "Tomb Sweeping / Qingming (weekend)"
+    },
+    {
+      "date": "2026-04-06",
+      "name": "Tomb Sweeping / Qingming"
+    },
+    {
+      "date": "2026-05-01",
+      "name": "Labour Day"
+    },
+    {
+      "date": "2026-05-02",
+      "name": "Labour Day (weekend)"
+    },
+    {
+      "date": "2026-05-03",
+      "name": "Labour Day (weekend)"
+    },
+    {
+      "date": "2026-05-04",
+      "name": "Labour Day"
+    },
+    {
+      "date": "2026-05-05",
+      "name": "Labour Day (adjusted rest)"
+    },
+    {
+      "date": "2026-06-19",
+      "name": "Dragon Boat Festival"
+    },
+    {
+      "date": "2026-06-20",
+      "name": "Dragon Boat Festival (weekend)"
+    },
+    {
+      "date": "2026-06-21",
+      "name": "Dragon Boat Festival (weekend)"
+    },
+    {
+      "date": "2026-09-25",
+      "name": "Mid-Autumn Festival"
+    },
+    {
+      "date": "2026-09-26",
+      "name": "Mid-Autumn Festival (weekend)"
+    },
+    {
+      "date": "2026-09-27",
+      "name": "Mid-Autumn Festival (weekend)"
+    },
+    {
+      "date": "2026-10-01",
+      "name": "National Day"
+    },
+    {
+      "date": "2026-10-02",
+      "name": "National Day"
+    },
+    {
+      "date": "2026-10-03",
+      "name": "National Day"
+    },
+    {
+      "date": "2026-10-04",
+      "name": "National Day"
+    },
+    {
+      "date": "2026-10-05",
+      "name": "National Day"
+    },
+    {
+      "date": "2026-10-06",
+      "name": "National Day"
+    },
+    {
+      "date": "2026-10-07",
+      "name": "National Day"
+    }
+  ],
+  "source": {
+    "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+    "footnote": "(2) Off-peak rates are half of the peak rates. Peak hours are 01:00 - 04:00 and 06:00 - 10:00 UTC, Monday through Friday, excluding Chinese public holidays. All other hours are off-peak, including weekends and Chinese public holidays in full.",
+    "days_phrase": "Monday through Friday",
+    "recorded_at": "2026-10-16T21:34:18Z"
+  }
+}

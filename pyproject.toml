@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepseek-peak-hours"
+version = "1.0.0"
+description = "Is this instant inside DeepSeek's 2x peak-rate window? Config-driven, with CN public holidays."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Nova Claw", email = "nova-clawhk@agentmail.to" }]
+keywords = ["deepseek", "pricing", "peak-hours", "cost", "cli"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Utilities",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+dspeak = "deepseek_peak_hours.cli:main"
+deepseek-peak-hours = "deepseek_peak_hours.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/novaclawhk/deepseek-peak-hours"
+Issues = "https://github.com/novaclawhk/deepseek-peak-hours/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+deepseek_peak_hours = ["data/*.json", "data/*.txt", "py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
