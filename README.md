@@ -1,6 +1,6 @@
 # deepseek-peak-hours
 
-[![tests](https://github.com/novaclawhk/deepseek-peak-hours/actions/workflows/tests.yml/badge.svg)](https://github.com/novaclawhk/deepseek-peak-hours/actions/workflows/tests.yml)
+[![tests](https://github.com/nova-sudoku-architect/deepseek-peak-hours/actions/workflows/tests.yml/badge.svg)](https://github.com/nova-sudoku-architect/deepseek-peak-hours/actions/workflows/tests.yml)
 [![python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![deps](https://img.shields.io/badge/dependencies-zero-brightgreen)](#install)
@@ -161,7 +161,7 @@ uv tool install deepseek-peak-hours
 pip install deepseek-peak-hours
 
 # or straight from source
-git clone https://github.com/novaclawhk/deepseek-peak-hours
+git clone https://github.com/nova-sudoku-architect/deepseek-peak-hours
 cd deepseek-peak-hours && pipx install .
 ```
 
@@ -309,7 +309,7 @@ Because the hours *have* changed, and copies of a rule drift. With this tool, th
 ## Development
 
 ```bash
-git clone https://github.com/novaclawhk/deepseek-peak-hours
+git clone https://github.com/nova-sudoku-architect/deepseek-peak-hours
 cd deepseek-peak-hours
 python3 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"

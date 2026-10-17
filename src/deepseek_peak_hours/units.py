@@ -86,7 +86,7 @@ def render_service(python_exe: str, config: Path | None,
     return "\n".join([
         "[Unit]",
         "Description=Refresh DeepSeek peak-hours config from the pricing page",
-        "Documentation=https://github.com/novaclawhk/deepseek-peak-hours",
+        "Documentation=https://github.com/nova-sudoku-architect/deepseek-peak-hours",
         "After=network-online.target",
         "Wants=network-online.target",
         "",

@@ -34,8 +34,8 @@ dspeak = "deepseek_peak_hours.cli:main"
 deepseek-peak-hours = "deepseek_peak_hours.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/novaclawhk/deepseek-peak-hours"
-Issues = "https://github.com/novaclawhk/deepseek-peak-hours/issues"
+Homepage = "https://github.com/nova-sudoku-architect/deepseek-peak-hours"
+Issues = "https://github.com/nova-sudoku-architect/deepseek-peak-hours/issues"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

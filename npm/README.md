@@ -26,4 +26,4 @@ touching your global site-packages. Override the interpreter with
 `DSPEAK_PYTHON=/path/to/python3`.
 
 Full docs, exit codes and config reference: see the
-[repository README](https://github.com/novaclawhk/deepseek-peak-hours#readme).
+[repository README](https://github.com/nova-sudoku-architect/deepseek-peak-hours#readme).

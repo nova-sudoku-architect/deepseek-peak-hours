@@ -5,7 +5,7 @@ repo is always the source of truth, and the registries are just delivery.
 
 ```
                     ┌──────────────────────────────┐
-                    │  github.com/novaclawhk/      │
+                    │  github.com/nova-sudoku-architect/     │
                     │      deepseek-peak-hours     │   ← source of truth
                     └───────────┬──────────────────┘
                                 │
@@ -30,22 +30,22 @@ repo:
 
 ```bash
 # Python — from source
-pip install "git+https://github.com/novaclawhk/deepseek-peak-hours.git"
-pipx install "git+https://github.com/novaclawhk/deepseek-peak-hours.git"
+pip install "git+https://github.com/nova-sudoku-architect/deepseek-peak-hours.git"
+pipx install "git+https://github.com/nova-sudoku-architect/deepseek-peak-hours.git"
 
 # Python — pin a tag
-pip install "git+https://github.com/novaclawhk/deepseek-peak-hours.git@v1.0.0"
+pip install "git+https://github.com/nova-sudoku-architect/deepseek-peak-hours.git@v1.0.0"
 
 # Python — from a Release asset (no git needed)
-pip install https://github.com/novaclawhk/deepseek-peak-hours/releases/download/v1.0.0/deepseek_peak_hours-1.0.0-py3-none-any.whl
+pip install https://github.com/nova-sudoku-architect/deepseek-peak-hours/releases/download/v1.0.0/deepseek_peak_hours-1.0.0-py3-none-any.whl
 ```
 
 ```bash
 # npm — from a packed tarball attached to a Release
-npm i https://github.com/novaclawhk/deepseek-peak-hours/releases/download/v1.0.0/deepseek-peak-hours-1.0.0.tgz
+npm i https://github.com/nova-sudoku-architect/deepseek-peak-hours/releases/download/v1.0.0/deepseek-peak-hours-1.0.0.tgz
 ```
 
-> **Caveat:** `npm install github:novaclawhk/deepseek-peak-hours` will *not*
+> **Caveat:** `npm install github:nova-sudoku-architect/deepseek-peak-hours` will *not*
 > work for this repo, because `package.json` lives in `npm/`, not at the repo
 > root. Use the Release tarball above, or publish to the npm registry.
 
@@ -77,7 +77,7 @@ ever stored. One-time setup:
 2. Go to <https://pypi.org/manage/account/publishing/> → **Add a new pending
    publisher**:
    - PyPI project name: `deepseek-peak-hours`
-   - Owner: `novaclawhk`
+   - Owner: `nova-sudoku-architect`
    - Repository: `deepseek-peak-hours`
    - Workflow name: `release.yml`
    - Environment: `pypi`
@@ -146,7 +146,7 @@ npm publish --access public      # ← required for scoped names
 ```
 
 - **Name check:** `npm view deepseek-peak-hours` — if it 404s, the name is free.
-  If taken, publish as `@novaclawhk/deepseek-peak-hours` (scoped names need
+  If taken, publish as `@nova-sudoku-architect/deepseek-peak-hours` (scoped names need
   `--access public` on first publish).
 - **2FA:** the account needs 2FA enabled. Use a *Granular Access Token* with
   "Read and write" + "Bypass 2FA" for CI, stored as `NPM_TOKEN`.
@@ -173,7 +173,7 @@ CI publishing:
 Alternative if you want the package tied to the repo:
 
 ```bash
-npm config set @novaclawhk:registry https://npm.pkg.github.com
+npm config set @nova-sudoku-architect:registry https://npm.pkg.github.com
 npm publish --registry https://npm.pkg.github.com
 ```
 
